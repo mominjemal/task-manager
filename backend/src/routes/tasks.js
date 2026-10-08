@@ -7,7 +7,22 @@ const router = express.Router();
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { title, description, priority, dueDate } = req.body;
+    if (!title || title.trim().length < 3) {
+      return res.status(400).json({
+        message: "Title must be at least 3 characters",
+      });
+    }
+    if (priority && !["LOW", "MEDIUM", "HIGH"].includes(priority)) {
+      return res.status(400).json({
+        message: "Priority must be LOW, MEDIUM, or HIGH",
+      });
+    }
 
+    if (dueDate && isNaN(new Date(dueDate).getTime())) {
+      return res.status(400).json({
+        message: "Invalid due date",
+      });
+    }
     const task = await prisma.task.create({
       data: {
         title,
