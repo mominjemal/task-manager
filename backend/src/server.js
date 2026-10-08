@@ -5,12 +5,14 @@ const cors = require("cors");
 const prisma = require("./prisma");
 const authRoutes = require("./routes/auth");
 const authMiddleware = require("./middleware/authMiddleware");
+const taskRoutes = require("./routes/tasks");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use("/api/tasks", taskRoutes);
 
 app.get("/", (req, res) => {
   res.json({
