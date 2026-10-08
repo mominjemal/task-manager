@@ -1,26 +1,22 @@
 const express = require("express");
 const prisma = require("../prisma");
 const authMiddleware = require("../middleware/authMiddleware");
+const validateTask = require("../utils/taskValidation");
 
 const router = express.Router();
 
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { title, description, priority, dueDate } = req.body;
-    if (!title || title.trim().length < 3) {
-      return res.status(400).json({
-        message: "Title must be at least 3 characters",
-      });
-    }
-    if (priority && !["LOW", "MEDIUM", "HIGH"].includes(priority)) {
-      return res.status(400).json({
-        message: "Priority must be LOW, MEDIUM, or HIGH",
-      });
-    }
+    const validationError = validateTask({
+      title,
+      priority,
+      dueDate,
+    });
 
-    if (dueDate && isNaN(new Date(dueDate).getTime())) {
+    if (validationError) {
       return res.status(400).json({
-        message: "Invalid due date",
+        message: validationError,
       });
     }
     const task = await prisma.task.create({
@@ -97,6 +93,19 @@ router.get("/:id", authMiddleware, async (req, res) => {
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
     const { title, description, priority, dueDate, completed } = req.body;
+
+    const validationError = validateTask({
+      title,
+      priority,
+      dueDate,
+      completed,
+    });
+
+    if (validationError) {
+      return res.status(400).json({
+        message: validationError,
+      });
+    }
 
     const task = await prisma.task.findFirst({
       where: {
