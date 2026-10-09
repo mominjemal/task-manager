@@ -1,5 +1,5 @@
 import { useState } from "react"
-function Login() {
+function Login({ onLogin }) {
   const [email, setEmail] = useState("")
 const [password, setPassword] = useState("")
 const [message, setMessage] = useState("")
@@ -26,7 +26,7 @@ async function handleSubmit(e) {
     }
 
     localStorage.setItem("token", data.token)
-    setMessage("Login successful!")
+      onLogin()
   } catch (error) {
     setMessage("Could not connect to the server.")
   }
