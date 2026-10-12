@@ -90,34 +90,35 @@ router.get("/:id", authMiddleware, async (req, res) => {
     });
   }
 });
+
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
-    const { title, description, priority, dueDate, completed } = req.body;
-
-    const validationError = validateTask({
-      title,
-      priority,
-      dueDate,
-      completed,
-    });
-
-    if (validationError) {
-      return res.status(400).json({
-        message: validationError,
-      });
-    }
-
     const task = await prisma.task.findFirst({
       where: {
         id: Number(req.params.id),
         userId: req.user.userId,
       },
-    });
+    })
 
     if (!task) {
       return res.status(404).json({
         message: "Task not found",
-      });
+      })
+    }
+
+    const { title, description, priority, dueDate, completed } = req.body
+
+    const validationError = validateTask({
+      title: title ?? task.title,
+      priority: priority ?? task.priority,
+      dueDate: dueDate === undefined ? task.dueDate : dueDate,
+      completed: completed ?? task.completed,
+    })
+
+    if (validationError) {
+      return res.status(400).json({
+        message: validationError,
+      })
     }
 
     const updatedTask = await prisma.task.update({
@@ -125,26 +126,29 @@ router.put("/:id", authMiddleware, async (req, res) => {
         id: task.id,
       },
       data: {
-        title,
-        description,
-        priority,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        completed,
+        ...(title !== undefined && { title }),
+        ...(description !== undefined && { description }),
+        ...(priority !== undefined && { priority }),
+        ...(dueDate !== undefined && {
+          dueDate: dueDate ? new Date(dueDate) : null,
+        }),
+        ...(completed !== undefined && { completed }),
       },
-    });
+    })
 
     res.json({
       message: "Task updated successfully",
       task: updatedTask,
-    });
+    })
   } catch (error) {
-    console.error(error);
+    console.error(error)
 
     res.status(500).json({
       message: "Failed to update task",
-    });
+    })
   }
-});
+})
+
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
     const task = await prisma.task.findFirst({
