@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import "./Dashboard.css"
 function Dashboard() {
   const [tasks, setTasks] = useState([])
   const [title, setTitle] = useState("")
@@ -144,40 +145,59 @@ function Dashboard() {
   }
 
 
+
   return (
-    <div>
-      <h1>Task Manager</h1>
-      <p>Welcome to your dashboard!</p>
-
-
-      <div>
-
-
-        <h2>Add a New Task</h2>
-
-        <form onSubmit={handleAddTask}>
+    <div className="dashboard">
+      <div className="dashboard-container">
+        <header className="dashboard-header">
           <div>
-            <label>Title</label>
+            <h1>My Task Manager</h1>
+            <p>Organize your work and get things done.</p>
+          </div>
+        </header>
+
+        <section className="task-summary">
+          <div className="summary-card">
+            <p>Total Tasks</p>
+            <h2>{tasks.length}</h2>
+          </div>
+
+          <div className="summary-card">
+            <p>Completed</p>
+            <h2>{tasks.filter((task) => task.completed).length}</h2>
+          </div>
+
+          <div className="summary-card">
+            <p>Pending</p>
+            <h2>{tasks.filter((task) => !task.completed).length}</h2>
+          </div>
+        </section>
+
+        <section className="task-form">
+          <h2>Add a New Task</h2>
+
+          <form onSubmit={handleAddTask}>
+            <label htmlFor="task-title">Title</label>
             <input
+              id="task-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter task title"
+              required
             />
-          </div>
 
-          <div>
-            <label>Description</label>
+            <label htmlFor="task-description">Description</label>
             <textarea
+              id="task-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Enter task description"
             />
-          </div>
 
-          <div>
-            <label>Priority</label>
+            <label htmlFor="task-priority">Priority</label>
             <select
+              id="task-priority"
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
             >
@@ -185,34 +205,53 @@ function Dashboard() {
               <option value="MEDIUM">Medium</option>
               <option value="HIGH">High</option>
             </select>
-          </div>
 
-          <button type="submit">Add Task</button>
-        </form>
+            <button type="submit">+ Add Task</button>
+          </form>
+        </section>
 
-        <h2>My Tasks</h2>
+        <section className="task-list">
+          <h2>My Tasks</h2>
 
-        {tasks.length === 0 ? (
-          <p>No tasks yet. Add your first task soon!</p>
-        ) : (
-          tasks.map((task) => (
-            <div key={task.id}>
-              <h3>{task.title}</h3>
-              <p>{task.description}</p>
-              <p>Priority: {task.priority}</p>
-              <p>Status: {task.completed ? "Completed" : "Pending"}</p>
-              <button onClick={() => handleToggleTask(task)}>
-                {task.completed ? "Mark Pending" : "Mark Complete"}
-              </button>
-              <button onClick={() => handleDeleteTask(task.id)}>
-                Delete
-              </button>
-            </div>
-          ))
-        )}
+          {tasks.length === 0 ? (
+            <p>No tasks yet. Add your first task above!</p>
+          ) : (
+            tasks.map((task) => (
+              <article className="task-card" key={task.id}>
+                <div>
+                  <h3>{task.title}</h3>
+
+                  {task.description && <p>{task.description}</p>}
+
+                  <p>
+                    Priority:{" "}
+                    <span className={`priority priority-${task.priority}`}>
+                      {task.priority}
+                    </span>
+                  </p>
+
+                  <p className={task.completed ? "completed" : "pending"}>
+                    Status: {task.completed ? "Completed" : "Pending"}
+                  </p>
+                </div>
+
+                <div className="task-actions">
+                  <button onClick={() => handleToggleTask(task)}>
+                    {task.completed ? "Mark Pending" : "Mark Complete"}
+                  </button>
+
+                  <button onClick={() => handleDeleteTask(task.id)}>
+                    Delete
+                  </button>
+                </div>
+              </article>
+            ))
+          )}
+        </section>
       </div>
     </div>
   )
+
 }
 
 export default Dashboard
