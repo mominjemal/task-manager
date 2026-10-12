@@ -7,6 +7,7 @@ function Dashboard() {
   const [priority, setPriority] = useState("MEDIUM")
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [priorityFilter, setPriorityFilter] = useState("ALL")
+  const [editingTaskId, setEditingTaskId] = useState(null)
 
 
   useEffect(() => {
@@ -37,38 +38,65 @@ function Dashboard() {
   }, [])
 
 
+  function handleEditTask(task) {
+    setEditingTaskId(task.id)
+    setTitle(task.title)
+    setDescription(task.description || "")
+    setPriority(task.priority)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+
   async function handleAddTask(e) {
     e.preventDefault()
 
     const token = localStorage.getItem("token")
+    const isEditing = editingTaskId !== null
 
     try {
-      const response = await fetch("http://localhost:5000/api/tasks", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          title,
-          description,
-          priority,
-        }),
-      })
+      const response = await fetch(
+        isEditing
+          ? `http://localhost:5000/api/tasks/${editingTaskId}`
+          : "http://localhost:5000/api/tasks",
+        {
+          method: isEditing ? "PUT" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            title,
+            description,
+            priority,
+          }),
+        }
+      )
 
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.message || "Failed to create task")
+        alert(data.message || "Failed to save task")
         return
       }
 
-      setTasks((currentTasks) => [data.task || data, ...currentTasks])
+      if (isEditing) {
+        const updatedTask = data.task || data
+
+        setTasks((currentTasks) =>
+          currentTasks.map((task) =>
+            task.id === editingTaskId ? updatedTask : task
+          )
+        )
+      } else {
+        setTasks((currentTasks) => [data.task || data, ...currentTasks])
+      }
+
       setTitle("")
       setDescription("")
       setPriority("MEDIUM")
+      setEditingTaskId(null)
     } catch (error) {
-      console.error("Error creating task:", error)
+      console.error("Error saving task:", error)
       alert("Could not connect to the server")
     }
   }
@@ -189,7 +217,8 @@ function Dashboard() {
         </section>
 
         <section className="task-form">
-          <h2>Add a New Task</h2>
+
+          <h2>{editingTaskId !== null ? "Edit Task" : "Add a New Task"}</h2>
 
           <form onSubmit={handleAddTask}>
             <label htmlFor="task-title">Title</label>
@@ -221,7 +250,24 @@ function Dashboard() {
               <option value="HIGH">High</option>
             </select>
 
-            <button type="submit">+ Add Task</button>
+            <button type="submit">
+              {editingTaskId !== null ? "Update Task" : "+ Add Task"}
+            </button>
+
+            {editingTaskId !== null && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingTaskId(null)
+                  setTitle("")
+                  setDescription("")
+                  setPriority("MEDIUM")
+                }}
+              >
+                Cancel
+              </button>
+            )}
+
           </form>
         </section>
 
@@ -273,7 +319,12 @@ function Dashboard() {
                   </p>
                 </div>
 
+
                 <div className="task-actions">
+                  <button onClick={() => handleEditTask(task)}>
+                    Edit
+                  </button>
+
                   <button onClick={() => handleToggleTask(task)}>
                     {task.completed ? "Mark Pending" : "Mark Complete"}
                   </button>
@@ -282,6 +333,7 @@ function Dashboard() {
                     Delete
                   </button>
                 </div>
+
               </article>
             ))
           )}
