@@ -5,6 +5,9 @@ function Dashboard() {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [priority, setPriority] = useState("MEDIUM")
+  const [statusFilter, setStatusFilter] = useState("ALL")
+  const [priorityFilter, setPriorityFilter] = useState("ALL")
+
 
   useEffect(() => {
     async function fetchTasks() {
@@ -144,6 +147,18 @@ function Dashboard() {
     }
   }
 
+  const filteredTasks = tasks.filter((task) => {
+    const matchesStatus =
+      statusFilter === "ALL" ||
+      (statusFilter === "COMPLETED" && task.completed) ||
+      (statusFilter === "PENDING" && !task.completed)
+
+    const matchesPriority =
+      priorityFilter === "ALL" || task.priority === priorityFilter
+
+    return matchesStatus && matchesPriority
+  })
+
 
 
   return (
@@ -210,13 +225,36 @@ function Dashboard() {
           </form>
         </section>
 
+
         <section className="task-list">
           <h2>My Tasks</h2>
+
+          <div className="task-filters">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="COMPLETED">Completed</option>
+            </select>
+
+            <select
+              value={priorityFilter}
+              onChange={(e) => setPriorityFilter(e.target.value)}
+            >
+              <option value="ALL">All Priorities</option>
+              <option value="LOW">Low Priority</option>
+              <option value="MEDIUM">Medium Priority</option>
+              <option value="HIGH">High Priority</option>
+            </select>
+          </div>
+
 
           {tasks.length === 0 ? (
             <p>No tasks yet. Add your first task above!</p>
           ) : (
-            tasks.map((task) => (
+            filteredTasks.map((task) => (
               <article className="task-card" key={task.id}>
                 <div>
                   <h3>{task.title}</h3>
