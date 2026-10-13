@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import "./Dashboard.css"
+import { apiRequest } from "../api"
 function Dashboard() {
   const [tasks, setTasks] = useState([])
   const [title, setTitle] = useState("")
@@ -12,36 +13,17 @@ function Dashboard() {
 
 
   useEffect(() => {
+
     async function fetchTasks() {
-      const token = localStorage.getItem("token")
-
       try {
-        const response = await fetch("http://localhost:5000/api/tasks", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-
-        if (response.status === 401) {
-          localStorage.removeItem("token")
-          window.location.reload()
-          return
-        }
-
-        if (!response.ok) {
-          throw new Error("Failed to load tasks")
-        }
-
-
-        const data = await response.json()
-
-        console.log("Tasks API response:", JSON.stringify(data, null, 2))
+        const data = await apiRequest("/api/tasks")
         setTasks(data.tasks)
       } catch (error) {
         console.error("Error loading tasks:", error)
+        setMessage(error.message || "Failed to load tasks")
       }
     }
+
 
     fetchTasks()
   }, [])
@@ -67,22 +49,21 @@ function Dashboard() {
   }
 
 
+
   async function handleAddTask(e) {
     e.preventDefault()
 
-    const token = localStorage.getItem("token")
     const isEditing = editingTaskId !== null
 
     try {
-      const response = await fetch(
+      const data = await apiRequest(
         isEditing
-          ? `http://localhost:5000/api/tasks/${editingTaskId}`
-          : "http://localhost:5000/api/tasks",
+          ? `/api/tasks/${editingTaskId}`
+          : "/api/tasks",
         {
           method: isEditing ? "PUT" : "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             title,
@@ -91,18 +72,6 @@ function Dashboard() {
           }),
         }
       )
-      if (response.status === 401) {
-        localStorage.removeItem("token")
-        window.location.reload()
-        return
-      }
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        alert(data.message || "Failed to save task")
-        return
-      }
 
       if (isEditing) {
         const updatedTask = data.task || data
@@ -120,41 +89,31 @@ function Dashboard() {
       setDescription("")
       setPriority("MEDIUM")
       setEditingTaskId(null)
-      setMessage(isEditing ? "Task updated successfully!" : "Task created successfully!")
+
+      setMessage(
+        isEditing
+          ? "Task updated successfully!"
+          : "Task created successfully!"
+      )
     } catch (error) {
       console.error("Error saving task:", error)
-      alert("Could not connect to the server")
+      setMessage(error.message || "Failed to save task")
     }
   }
 
+
+
   async function handleToggleTask(task) {
-    const token = localStorage.getItem("token")
-
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/tasks/${task.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            completed: !task.completed,
-          }),
-        }
-      )
-      if (response.status === 401) {
-        localStorage.removeItem("token")
-        window.location.reload()
-        return
-      }
-      const data = await response.json()
-
-      if (!response.ok) {
-        alert(data.message || "Failed to update task")
-        return
-      }
+      const data = await apiRequest(`/api/tasks/${task.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          completed: !task.completed,
+        }),
+      })
 
       const updatedTask = data.task || data
 
@@ -163,6 +122,7 @@ function Dashboard() {
           item.id === task.id ? updatedTask : item
         )
       )
+
       setMessage(
         updatedTask.completed
           ? "Task completed successfully!"
@@ -170,9 +130,11 @@ function Dashboard() {
       )
     } catch (error) {
       console.error("Error updating task:", error)
-      alert("Could not connect to the server")
+      setMessage(error.message || "Failed to update task")
     }
   }
+
+
 
   async function handleDeleteTask(taskId) {
     const confirmed = window.confirm(
@@ -181,43 +143,22 @@ function Dashboard() {
 
     if (!confirmed) return
 
-    const token = localStorage.getItem("token")
-
     try {
-      const response = await fetch(
-        `http://localhost:5000/api/tasks/${taskId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-
-      if (response.status === 401) {
-        localStorage.removeItem("token")
-        window.location.reload()
-        return
-      }
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        alert(data.message || "Failed to delete task")
-        return
-      }
+      await apiRequest(`/api/tasks/${taskId}`, {
+        method: "DELETE",
+      })
 
       setTasks((currentTasks) =>
         currentTasks.filter((task) => task.id !== taskId)
       )
 
       setMessage("Task deleted successfully!")
-
     } catch (error) {
       console.error("Error deleting task:", error)
-      alert("Could not connect to the server")
+      setMessage(error.message || "Failed to delete task")
     }
   }
+
 
   const filteredTasks = tasks.filter((task) => {
     const matchesStatus =
