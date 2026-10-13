@@ -187,3 +187,14 @@ button:hover {
         width: 100%;
     }
 }
+
+/* Dashboard feedback message */
+.dashboard-message {
+    background: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}

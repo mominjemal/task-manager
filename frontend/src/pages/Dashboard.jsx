@@ -8,6 +8,7 @@ function Dashboard() {
   const [statusFilter, setStatusFilter] = useState("ALL")
   const [priorityFilter, setPriorityFilter] = useState("ALL")
   const [editingTaskId, setEditingTaskId] = useState(null)
+  const [message, setMessage] = useState("")
 
 
   useEffect(() => {
@@ -21,9 +22,17 @@ function Dashboard() {
           },
         })
 
+
+        if (response.status === 401) {
+          localStorage.removeItem("token")
+          window.location.reload()
+          return
+        }
+
         if (!response.ok) {
           throw new Error("Failed to load tasks")
         }
+
 
         const data = await response.json()
 
@@ -71,6 +80,11 @@ function Dashboard() {
           }),
         }
       )
+      if (response.status === 401) {
+        localStorage.removeItem("token")
+        window.location.reload()
+        return
+      }
 
       const data = await response.json()
 
@@ -95,6 +109,7 @@ function Dashboard() {
       setDescription("")
       setPriority("MEDIUM")
       setEditingTaskId(null)
+      setMessage(isEditing ? "Task updated successfully!" : "Task created successfully!")
     } catch (error) {
       console.error("Error saving task:", error)
       alert("Could not connect to the server")
@@ -118,7 +133,11 @@ function Dashboard() {
           }),
         }
       )
-
+      if (response.status === 401) {
+        localStorage.removeItem("token")
+        window.location.reload()
+        return
+      }
       const data = await response.json()
 
       if (!response.ok) {
@@ -132,6 +151,11 @@ function Dashboard() {
         currentTasks.map((item) =>
           item.id === task.id ? updatedTask : item
         )
+      )
+      setMessage(
+        updatedTask.completed
+          ? "Task completed successfully!"
+          : "Task marked as pending!"
       )
     } catch (error) {
       console.error("Error updating task:", error)
@@ -159,6 +183,12 @@ function Dashboard() {
         }
       )
 
+      if (response.status === 401) {
+        localStorage.removeItem("token")
+        window.location.reload()
+        return
+      }
+
       const data = await response.json()
 
       if (!response.ok) {
@@ -169,6 +199,9 @@ function Dashboard() {
       setTasks((currentTasks) =>
         currentTasks.filter((task) => task.id !== taskId)
       )
+
+      setMessage("Task deleted successfully!")
+
     } catch (error) {
       console.error("Error deleting task:", error)
       alert("Could not connect to the server")
@@ -188,16 +221,32 @@ function Dashboard() {
   })
 
 
+  function handleLogout() {
+    localStorage.removeItem("token")
+    window.location.reload()
+  }
+
+
 
   return (
     <div className="dashboard">
+
       <div className="dashboard-container">
+        {message && (
+          <div className="dashboard-message" role="status">
+            {message}
+          </div>
+        )}
+
         <header className="dashboard-header">
           <div>
             <h1>My Task Manager</h1>
             <p>Organize your work and get things done.</p>
           </div>
+
+          <button onClick={handleLogout}>Logout</button>
         </header>
+
 
         <section className="task-summary">
           <div className="summary-card">
