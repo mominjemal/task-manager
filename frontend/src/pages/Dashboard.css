@@ -188,13 +188,21 @@ button:hover {
     }
 }
 
-/* Dashboard feedback message */
+
+/* Floating dashboard notification */
 .dashboard-message {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 1000;
+    max-width: calc(100vw - 48px);
+    box-sizing: border-box;
+
     background: #dcfce7;
     color: #166534;
     border: 1px solid #bbf7d0;
-    padding: 14px 18px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    padding: 14px 20px;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     font-weight: 500;
 }

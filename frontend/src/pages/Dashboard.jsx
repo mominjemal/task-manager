@@ -46,6 +46,17 @@ function Dashboard() {
     fetchTasks()
   }, [])
 
+  useEffect(() => {
+    if (!message) return
+
+    const timer = setTimeout(() => {
+      setMessage("")
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [message])
+
+
 
   function handleEditTask(task) {
     setEditingTaskId(task.id)
