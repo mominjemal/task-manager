@@ -1,6 +1,10 @@
 import { useState } from "react"
 import "./Login.css"
-function Login({ onLogin }) {
+function Login({
+  onLogin,
+  onSwitchToRegister,
+  registrationMessage,
+}) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [message, setMessage] = useState("")
@@ -42,8 +46,9 @@ function Login({ onLogin }) {
           Sign in to manage your tasks
         </p>
 
-        {message && <p className="login-error">{message}</p>}
-
+        {registrationMessage && (
+          <p className="login-success">{registrationMessage}</p>
+        )}
         <form onSubmit={handleSubmit}>
           <div className="login-field">
             <label>Email</label>
@@ -84,6 +89,14 @@ function Login({ onLogin }) {
             Login
           </button>
         </form>
+
+        <p className="login-footer">
+          Don't have an account?{" "}
+          <button type="button" onClick={onSwitchToRegister}>
+            Create account
+          </button>
+        </p>
+
       </div>
     </div>
 

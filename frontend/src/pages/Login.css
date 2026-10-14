@@ -155,6 +155,20 @@
     line-height: 1.5;
 }
 
+
+/* Registration success message */
+.login-success {
+    margin: 0 0 18px;
+    padding: 12px 14px;
+    border: 1px solid #bbf7d0;
+    border-radius: 9px;
+    background: #f0fdf4;
+    color: #166534;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+
 /* Mobile screens */
 @media (max-width: 480px) {
     .login-page {
