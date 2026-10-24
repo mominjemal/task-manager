@@ -1,5 +1,8 @@
+
 import { useState } from "react"
 import "./Login.css"
+import { apiRequest } from "../api"
+
 function Login({
   onLogin,
   onSwitchToRegister,
@@ -15,7 +18,7 @@ function Login({
     setMessage("Logging in...")
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const data = await apiRequest("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -23,22 +26,14 @@ function Login({
         body: JSON.stringify({ email, password }),
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setMessage(data.message || "Login failed")
-        return
-      }
-
       localStorage.setItem("token", data.token)
       onLogin()
     } catch (error) {
-      setMessage("Could not connect to the server.")
+      setMessage(error.message || "Could not connect to the server.")
     }
   }
+
   return (
-
-
     <div className="login-page">
       <div className="login-card">
         <h1>Welcome Back</h1>
@@ -49,6 +44,9 @@ function Login({
         {registrationMessage && (
           <p className="login-success">{registrationMessage}</p>
         )}
+
+        {message && <p>{message}</p>}
+
         <form onSubmit={handleSubmit}>
           <div className="login-field">
             <label>Email</label>
@@ -96,10 +94,8 @@ function Login({
             Create account
           </button>
         </p>
-
       </div>
     </div>
-
   )
 }
 
