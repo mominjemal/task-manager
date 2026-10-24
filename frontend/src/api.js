@@ -1,5 +1,5 @@
 
-const API_URL = "http://localhost:5000"
+const API_URL = "https://task-manager-0kbs.onrender.com"
 
 export async function apiRequest(path, options = {
 }) {
